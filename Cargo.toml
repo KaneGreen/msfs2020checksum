@@ -1,0 +1,18 @@
+[package]
+name = "msfs2020checksum"
+version = "0.3.2"
+edition = "2021"
+authors = ["KaneGreen <737445366KG@Gmail.com>"]
+license = "BSL-1.0"
+include = ["src/", "Cargo.toml", "LICENSE", "README.md"]
+
+[dependencies]
+clap = { version = "3.1.6", features = ["derive"] }
+crossbeam-utils = "0.8.8"
+dirs = "4.0.0"
+walkdir = "2.3.2"
+xxhash-rust = { version = "0.8.4", features = ["xxh3"] }
+
+[profile.release]
+codegen-units = 1
+lto = true

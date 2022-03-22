@@ -1,0 +1,53 @@
+name: build
+
+on:
+  release:
+    types: [published]
+
+defaults:
+  run:
+    shell: pwsh
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  build:
+    runs-on: windows-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: 'master'
+
+      - name: Update Rustc
+        run: |
+          rustup self update
+          rustup default stable-x86_64-pc-windows-msvc
+          rustup update
+
+      - name: Build
+        timeout-minutes: 120
+        run: |
+          rustup default stable-x86_64-pc-windows-msvc
+          cargo rustc --release -- -C target-feature=+avx2
+          cd target
+          mkdir upload 
+          cd release
+          cp msfs2020checksum.exe ..\\upload
+
+      - name: Hashing
+        run: |
+          cd target/upload/
+          Get-FileHash msfs2020checksum.exe
+
+      - name: Upload Binaries to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
+          file: target/upload/*
+          tag: ${{ github.ref }}
+          file_glob: true
