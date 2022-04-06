@@ -14,6 +14,7 @@ The following are the requirements for running the msfs2020checksum tool (not fo
 * MSFS2020 has been properly installed and has been run at least once.
 * At least 8GB RAM.
 * If the MSFS2020's package files are placed on the SSD, there will be a big performance improvement.
+* CPUs that support AVX2 instructions.
 
 ## Usage
 1. Open the Command Prompt or PowerShell in the directory of `msfs2020checksum.exe` file and then run this command:
