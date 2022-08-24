@@ -117,7 +117,8 @@ fn main() {
                                 None => break,
                             };
                         }
-                        match get_xxhash3_128_and_size(&package_file) {
+                        let mut buffer = Box::new([0; BUFFERIZE as usize]);
+                        match get_xxhash3_128_and_size(&package_file, &mut buffer[..]) {
                             Ok(Some((hash, filesize))) => {
                                 let relative_path =
                                     match package_file.strip_prefix(&thread_packages_dir) {
@@ -156,7 +157,8 @@ fn main() {
             "{} is a file. Processing with single-threaded.\n",
             packages_dir.to_string_lossy()
         );
-        match get_xxhash3_128_and_size(&packages_dir) {
+        let mut buffer = Box::new([0; BUFFERIZE as usize]);
+        match get_xxhash3_128_and_size(&packages_dir, &mut buffer[..]) {
             Ok(Some((hash, filesize))) => {
                 let path_string = packages_dir.to_string_lossy().to_string();
                 if print_screen {
@@ -241,23 +243,22 @@ fn get_msfs_packages_dir(usercfg: &Path) -> Option<PathBuf> {
     None
 }
 
-fn get_xxhash3_128_and_size(file: &Path) -> IoResult<Option<(u128, u64)>> {
+fn get_xxhash3_128_and_size(file: &Path, buffer: &mut [u8]) -> IoResult<Option<(u128, u64)>> {
     let meta = file.metadata()?;
     if meta.is_dir() {
         return Ok(None);
     }
     let filesize = meta.len();
     let hash = if filesize > BUFFERIZE {
-        bigfile_xxhash3_128(file)
+        bigfile_xxhash3_128(file, buffer)
     } else {
         smallfile_xxhash3_128(file, filesize as usize)
     };
     Ok(Some((hash, filesize)))
 }
 
-fn bigfile_xxhash3_128(file: &Path) -> u128 {
+fn bigfile_xxhash3_128(file: &Path, buffer: &mut [u8]) -> u128 {
     let mut fhr = File::open(file).unwrap();
-    let mut buffer = Box::new([0; BUFFERIZE as usize]);
     let mut hasher = xxh3::Xxh3::new();
     loop {
         let read_size = fhr.read(buffer.as_mut()).unwrap();
