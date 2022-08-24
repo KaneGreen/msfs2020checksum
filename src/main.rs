@@ -109,6 +109,7 @@ fn main() {
                 let thread_packages_dir = &packages_dir;
                 let handle = s.spawn(move || {
                     let mut result = Vec::new();
+                    let mut buffer = Box::new([0; BUFFERIZE as usize]);
                     loop {
                         let package_file;
                         {
@@ -118,7 +119,6 @@ fn main() {
                                 None => break,
                             };
                         }
-                        let mut buffer = Box::new([0; BUFFERIZE as usize]);
                         match get_xxhash3_128_and_size(&package_file, &mut buffer[..]) {
                             Ok(Some((hash, filesize))) => {
                                 let relative_path =
