@@ -10,8 +10,9 @@ use xxhash_rust::xxh3;
 
 // In the 16-thread test on my Seagate HDD,
 // 128M can achieve the best sequential read performance
+// But to reduce disk pressure, use 64M
 // On NVMe SSDs, there doesn't seem to be a noticeable difference in any size
-const BUFFERIZE: u64 = 128 * 1024 * 1024;
+const BUFFERIZE: u64 = 64 * 1024 * 1024;
 
 /// xxhash checksum for MSFS 2020 data files
 #[derive(Parser, Debug)]
