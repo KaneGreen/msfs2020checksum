@@ -1,11 +1,10 @@
 use clap::Parser;
-use crossbeam_utils::thread;
 use dirs::{data_dir, data_local_dir};
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Read, Result as IoResult, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use std::thread::available_parallelism;
+use std::thread;
 use walkdir::WalkDir;
 use xxhash_rust::xxh3;
 
@@ -86,7 +85,7 @@ fn main() {
     }
 
     let thread_num = if args.threads == 0 {
-        available_parallelism().unwrap().into()
+        thread::available_parallelism().unwrap().into()
     } else {
         args.threads
     };
@@ -107,7 +106,7 @@ fn main() {
             for _ in 0..thread_num {
                 let thread_package_files = &s_package_files;
                 let thread_packages_dir = &packages_dir;
-                let handle = s.spawn(move |_| {
+                let handle = s.spawn(move || {
                     let mut result = Vec::new();
                     loop {
                         let package_file;
@@ -150,8 +149,7 @@ fn main() {
                 let mut result = handle.join().unwrap();
                 results.append(&mut result);
             }
-        })
-        .unwrap();
+        });
         results.sort_unstable();
     } else {
         eprintln!(
