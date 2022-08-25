@@ -39,9 +39,10 @@ jobs:
           cp release/msfs2020checksum.exe upload/
 
       - name: Hashing
+        shell: bash
         run: |
-          $MYEXEHASH=(Get-FileHash target/upload/msfs2020checksum.exe).Hash
-          echo "MYEXEHASH=$MYEXEHASH" >> $env:GITHUB_ENV
+          cd target/upload/
+          sha256sum msfs2020checksum.exe | tee msfs2020checksum.exe.sha256
 
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
@@ -52,5 +53,3 @@ jobs:
           file: target/upload/*
           file_glob: true
           tag: ${{ github.ref }}
-          body: |
-            "SHA256: ${{ github.MYEXEHASH }}"
