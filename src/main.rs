@@ -8,10 +8,13 @@ use std::thread;
 use walkdir::WalkDir;
 use xxhash_rust::xxh3;
 
-// In the 16-thread test on my Seagate HDD,
-// 128M can achieve the best sequential read performance
-// On NVMe SSDs, there doesn't seem to be a noticeable difference in any size
-const BUFFERIZE: u64 = 128 * 1024 * 1024;
+// A large buffer can take advantage of the sequential read performance of the
+// hard disk as much as possible, whether it is a mechanical hard disk or a
+// solid-state disk.
+// But this will significantly increase the memory usage. For example, in a
+// 16-thread scenario, this would consume 4GB of memory.
+// However, I believe flight sim users should have 16GB+ of memory.
+const BUFFERIZE: u64 = 256 * 1024 * 1024;
 
 /// xxhash checksum for MSFS 2020 data files
 #[derive(Parser, Debug)]
