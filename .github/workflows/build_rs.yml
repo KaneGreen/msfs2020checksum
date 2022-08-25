@@ -52,4 +52,5 @@ jobs:
           file: target/upload/*
           file_glob: true
           tag: ${{ github.ref }}
-          body: "SHA256: ${{ github.MYEXEHASH }}"
+          body: |
+            "SHA256: ${{ github.MYEXEHASH }}"
