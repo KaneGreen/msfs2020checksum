@@ -13,7 +13,7 @@ The following are the requirements for running the msfs2020checksum tool (not fo
 * Windows 10 21H1 or later 64-bit operating system (Not available for Xbox or Linux).
 * MSFS2020 has been properly installed and has been run at least once.
 * CPUs that support the SSE2 instruction set (most modern x86 CPUs already do).  
-If your CPU also supports the AVX2 instruction set, it will theoretically be faster..
+If your CPU also supports the AVX2 instruction set, it will theoretically be faster.
 * At least 8 GB RAM, but I recommend 16 GB or more.
 * If the MSFS2020's package files are placed on the SSD, there will be a big performance improvement.
 
@@ -32,7 +32,7 @@ If your CPU also supports the AVX2 instruction set, it will theoretically be fas
 4. For the comparison results, you can refer to [here](compare_doc/README.md).
 
 ## Technical notes
-* I only have the MS Store version of MSFS 2020 on which this tool is tested and available.
+* I only have the MS Store version of MSFS2020 on which this tool is tested and available.
 This tool theoretically supports the Steam version, but I didn't test it.
 * There should be no symbolic links or hard links in the package directory.
 If there are symlinks or hard links, there may be some unexpected results.
