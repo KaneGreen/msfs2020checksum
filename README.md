@@ -12,8 +12,9 @@ This tool uses the 128-bit [xxHash](https://github.com/DoumanAsh/xxhash-rust) al
 The following are the requirements for running the msfs2020checksum tool (not for MSFS2020 itself):
 * Windows 10 21H1 or later 64-bit operating system (Not available for Xbox or Linux).
 * MSFS2020 has been properly installed and has been run at least once.
-* CPUs that support AVX2 instructions.
-* At least 8GB RAM.
+* CPUs that support the SSE2 instruction set (most modern x86 CPUs already do).  
+If your CPU also supports the AVX2 instruction set, it will theoretically be faster..
+* At least 8 GB RAM, but I recommend 16 GB or more.
 * If the MSFS2020's package files are placed on the SSD, there will be a big performance improvement.
 
 ## Usage

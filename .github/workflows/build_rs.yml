@@ -29,19 +29,29 @@ jobs:
           rustup default stable-x86_64-pc-windows-msvc
           rustup update
 
-      - name: Build
-        timeout-minutes: 120
+      - name: Build AVX2
+        timeout-minutes: 240
         run: |
           rustup default stable-x86_64-pc-windows-msvc
           cargo rustc --release -- -C target-feature=+avx2
-          cd target
+          Set-Location target
           mkdir upload
-          cp release/msfs2020checksum.exe upload/
+          Copy-Item release/msfs2020checksum.exe upload/msfs2020checksum.avx2.exe
+
+      - name: Build default
+        timeout-minutes: 240
+        run: |
+          Remove-Item -Recurse -Force target/release
+          Remove-Item -Force target/.rustc_info.json
+          cargo build --release
+          Set-Location target
+          Copy-Item release/msfs2020checksum.exe upload/msfs2020checksum.exe
 
       - name: Hashing
         shell: bash
         run: |
           cd target/upload/
+          sha256sum msfs2020checksum.avx2.exe | tee msfs2020checksum.avx2.exe.sha256
           sha256sum msfs2020checksum.exe | tee msfs2020checksum.exe.sha256
 
       - name: Upload Binaries to Release
