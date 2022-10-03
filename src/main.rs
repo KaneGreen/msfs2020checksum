@@ -145,7 +145,7 @@ fn main() {
                         }
                     }
                     result.sort_unstable();
-                    return result;
+                    result
                 });
                 t_handles.push(handle);
             }
@@ -234,8 +234,7 @@ fn find_msfs_usercfg() -> Option<PathBuf> {
 
 fn get_msfs_packages_dir(usercfg: &Path) -> Option<PathBuf> {
     let fhr = File::open(usercfg).unwrap();
-    let mut lines = BufReader::new(fhr).lines();
-    while let Some(line) = lines.next() {
+    for line in BufReader::new(fhr).lines() {
         let line = line.unwrap();
         let line = line.trim();
         if line.starts_with("InstalledPackagesPath") {
