@@ -10,7 +10,7 @@ include = ["src/", "Cargo.toml", "LICENSE", "README.md"]
 clap = { version = "4.0.8", features = ["derive"] }
 dirs = "4.0.0"
 walkdir = "2.3.2"
-xxhash-rust = { version = "0.8.5", features = ["xxh3"] }
+xxhash-rust = { version = "0.8.6", features = ["xxh3"] }
 
 [profile.release]
 codegen-units = 1
