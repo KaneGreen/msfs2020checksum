@@ -96,6 +96,11 @@ fn main() {
                 .filter_map(|res| res.ok()),
         );
         let buffersize = get_buffer_size(thread_num) as usize;
+        eprintln!(
+            "Threads: {}\nMemory buffer: {} MiB per thread.\n",
+            thread_num,
+            buffersize / 1024 / 1024
+        );
         thread::scope(|s| {
             let mut t_handles = Vec::new();
             for _ in 0..thread_num {
@@ -103,7 +108,7 @@ fn main() {
                 let thread_packages_dir = &packages_dir;
                 let handle = s.spawn(move || {
                     let mut result = Vec::new();
-                    let mut buffer = vec![0; buffersize];
+                    let mut buffer = vec![0xFF; buffersize];
                     loop {
                         let package_file;
                         {
@@ -153,7 +158,8 @@ fn main() {
             packages_dir.to_string_lossy()
         );
         let buffersize = get_buffer_size(1) as usize;
-        let mut buffer = vec![0; buffersize as usize];
+        eprintln!("Memory buffer: {} MiB.\n", buffersize / 1024 / 1024);
+        let mut buffer = vec![0xFF; buffersize];
         match get_xxhash3_128_and_size(&packages_dir, &mut buffer[..]) {
             Ok(Some((hash, filesize))) => {
                 let path_string = packages_dir.to_string_lossy().to_string();
@@ -247,7 +253,7 @@ fn get_xxhash3_128_and_size(file: &Path, buffer: &mut [u8]) -> IoResult<Option<(
     let hash = if filesize > buffer.len() as u64 {
         bigfile_xxhash3_128(file, buffer)
     } else {
-        smallfile_xxhash3_128(file, filesize as usize)
+        smallfile_xxhash3_128(file, buffer)
     };
     Ok(Some((hash, filesize)))
 }
@@ -256,7 +262,7 @@ fn bigfile_xxhash3_128(file: &Path, buffer: &mut [u8]) -> u128 {
     let mut fhr = File::open(file).unwrap();
     let mut hasher = xxh3::Xxh3::new();
     loop {
-        let read_size = fhr.read(buffer.as_mut()).unwrap();
+        let read_size = fhr.read(buffer).unwrap();
         if read_size != 0 {
             hasher.update(&buffer[..read_size]);
         } else {
@@ -266,11 +272,10 @@ fn bigfile_xxhash3_128(file: &Path, buffer: &mut [u8]) -> u128 {
     hasher.digest128()
 }
 
-fn smallfile_xxhash3_128(file: &Path, filesize: usize) -> u128 {
+fn smallfile_xxhash3_128(file: &Path, buffer: &mut [u8]) -> u128 {
     let mut fhr = File::open(file).unwrap();
-    let mut data = Vec::with_capacity(filesize);
-    fhr.read_to_end(&mut data).unwrap();
-    xxh3::xxh3_128(&data)
+    let read_size = fhr.read(buffer).unwrap();
+    xxh3::xxh3_128(&buffer[..read_size])
 }
 
 fn get_buffer_size(thread_number: usize) -> usize {
@@ -282,13 +287,17 @@ fn get_buffer_size(thread_number: usize) -> usize {
     // However, I believe flight sim users should have 16GB+ of memory.
     const DEFAULT_BUFFERIZE: u64 = 256 * 1024 * 1024;
     const MINIMAL_BUFFERIZE: u64 = 16 * 1024 * 1024;
-    let available_memory_per_thread = available_memory() / thread_number as u64;
+    let available_memory_all = available_memory();
+    let available_memory_per_thread = available_memory_all / thread_number as u64;
     let mut bufferize = DEFAULT_BUFFERIZE;
     while bufferize > available_memory_per_thread && bufferize >= MINIMAL_BUFFERIZE {
         bufferize /= 2;
     }
     if bufferize > available_memory_per_thread {
-        panic!("No enough memory.");
+        panic!(
+            "No enough memory: current {:.3} MiB",
+            available_memory_all as f64 / 1024.0 / 1024.0
+        );
     }
     bufferize as usize
 }
