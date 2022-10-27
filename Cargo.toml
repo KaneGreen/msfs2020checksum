@@ -1,15 +1,19 @@
 [package]
 name = "msfs2020checksum"
-version = "0.4.4"
+version = "0.5.0"
 edition = "2021"
 authors = ["KaneGreen <737445366KG@Gmail.com>"]
 license = "BSL-1.0"
 include = ["src/", "Cargo.toml", "LICENSE", "README.md"]
 
 [dependencies]
-clap = { version = "4.0.9", features = ["derive"] }
+clap = { version = "4.0.18", features = ["derive"] }
 dirs = "4.0.0"
 walkdir = "2.3.2"
+windows = { version = "0.43.0", features = [
+    "Win32_System_SystemInformation",
+    "Win32_Foundation",
+] }
 xxhash-rust = { version = "0.8.6", features = ["xxh3"] }
 
 [profile.release]

@@ -8,14 +8,6 @@ use std::thread;
 use walkdir::WalkDir;
 use xxhash_rust::xxh3;
 
-// A large buffer can take advantage of the sequential read performance of the
-// hard disk as much as possible, whether it is a mechanical hard disk or a
-// solid-state disk.
-// But this will significantly increase the memory usage. For example, in a
-// 16-thread scenario, this would consume 4GB of memory.
-// However, I believe flight sim users should have 16GB+ of memory.
-const BUFFERIZE: u64 = 256 * 1024 * 1024;
-
 /// xxhash checksum for MSFS 2020 data files
 #[derive(Parser, Debug)]
 #[clap(version, about)]
@@ -103,7 +95,7 @@ fn main() {
                 .into_iter()
                 .filter_map(|res| res.ok()),
         );
-
+        let buffersize = get_buffer_size(thread_num) as usize;
         thread::scope(|s| {
             let mut t_handles = Vec::new();
             for _ in 0..thread_num {
@@ -111,7 +103,7 @@ fn main() {
                 let thread_packages_dir = &packages_dir;
                 let handle = s.spawn(move || {
                     let mut result = Vec::new();
-                    let mut buffer = Box::new([0; BUFFERIZE as usize]);
+                    let mut buffer = vec![0; buffersize];
                     loop {
                         let package_file;
                         {
@@ -160,7 +152,8 @@ fn main() {
             "{} is a file. Processing with single-threaded.\n",
             packages_dir.to_string_lossy()
         );
-        let mut buffer = Box::new([0; BUFFERIZE as usize]);
+        let buffersize = get_buffer_size(1) as usize;
+        let mut buffer = vec![0; buffersize as usize];
         match get_xxhash3_128_and_size(&packages_dir, &mut buffer[..]) {
             Ok(Some((hash, filesize))) => {
                 let path_string = packages_dir.to_string_lossy().to_string();
@@ -251,7 +244,7 @@ fn get_xxhash3_128_and_size(file: &Path, buffer: &mut [u8]) -> IoResult<Option<(
         return Ok(None);
     }
     let filesize = meta.len();
-    let hash = if filesize > BUFFERIZE {
+    let hash = if filesize > buffer.len() as u64 {
         bigfile_xxhash3_128(file, buffer)
     } else {
         smallfile_xxhash3_128(file, filesize as usize)
@@ -278,4 +271,36 @@ fn smallfile_xxhash3_128(file: &Path, filesize: usize) -> u128 {
     let mut data = Vec::with_capacity(filesize);
     fhr.read_to_end(&mut data).unwrap();
     xxh3::xxh3_128(&data)
+}
+
+fn get_buffer_size(thread_number: usize) -> usize {
+    // A large buffer can take advantage of the sequential read performance of the
+    // hard disk as much as possible, whether it is a mechanical hard disk or a
+    // solid-state disk.
+    // But this will significantly increase the memory usage. For example, in a
+    // 16-thread scenario, this would consume 4GB of memory.
+    // However, I believe flight sim users should have 16GB+ of memory.
+    const DEFAULT_BUFFERIZE: u64 = 256 * 1024 * 1024;
+    const MINIMAL_BUFFERIZE: u64 = 16 * 1024 * 1024;
+    let available_memory_per_thread = available_memory() / thread_number as u64;
+    let mut bufferize = DEFAULT_BUFFERIZE;
+    while bufferize > available_memory_per_thread && bufferize >= MINIMAL_BUFFERIZE {
+        bufferize /= 2;
+    }
+    if bufferize > available_memory_per_thread {
+        panic!("No enough memory.");
+    }
+    bufferize as usize
+}
+
+#[cfg(target_os = "windows")]
+fn available_memory() -> u64 {
+    use std::mem::{size_of, zeroed};
+    use windows::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
+    unsafe {
+        let mut mem_info: MEMORYSTATUSEX = zeroed();
+        mem_info.dwLength = size_of::<MEMORYSTATUSEX>() as u32;
+        GlobalMemoryStatusEx(&mut mem_info);
+        mem_info.ullAvailPhys
+    }
 }
