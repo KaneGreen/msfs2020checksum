@@ -30,7 +30,7 @@ jobs:
           rustup update
 
       - name: Build AVX2
-        timeout-minutes: 240
+        timeout-minutes: 600
         run: |
           rustup default stable-x86_64-pc-windows-msvc
           cargo rustc --release -- -C target-feature=+avx2
@@ -39,7 +39,7 @@ jobs:
           Copy-Item release/msfs2020checksum.exe upload/msfs2020checksum.avx2.exe
 
       - name: Build default
-        timeout-minutes: 240
+        timeout-minutes: 400
         run: |
           Remove-Item -Recurse -Force target/release
           Remove-Item -Force target/.rustc_info.json
