@@ -8,7 +8,7 @@ include = ["src/", "Cargo.toml", "LICENSE", "README.md"]
 
 [dependencies]
 clap = { version = "4.0.18", features = ["derive"] }
-dirs = "4.0.0"
+dirs = "5.0.0"
 walkdir = "2.3.2"
 windows = { version = "0.44.0", features = [
     "Win32_System_SystemInformation",
