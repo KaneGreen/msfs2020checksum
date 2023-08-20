@@ -309,7 +309,7 @@ fn available_memory() -> u64 {
     unsafe {
         let mut mem_info: MEMORYSTATUSEX = zeroed();
         mem_info.dwLength = size_of::<MEMORYSTATUSEX>() as u32;
-        GlobalMemoryStatusEx(&mut mem_info);
+        GlobalMemoryStatusEx(&mut mem_info).unwrap();
         mem_info.ullAvailPhys
     }
 }

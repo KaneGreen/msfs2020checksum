@@ -7,10 +7,10 @@ license = "BSL-1.0"
 include = ["src/", "Cargo.toml", "LICENSE", "README.md"]
 
 [dependencies]
-clap = { version = "4.2.1", features = ["derive"] }
-dirs = "5.0.0"
+clap = { version = "4.3.23", features = ["derive"] }
+dirs = "5.0.1"
 walkdir = "2.3.3"
-windows = { version = "0.48.0", features = [
+windows = { version = "0.51.1", features = [
     "Win32_System_SystemInformation",
     "Win32_Foundation",
 ] }
