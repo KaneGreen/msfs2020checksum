@@ -1,6 +1,6 @@
 [package]
 name = "msfs2020checksum"
-version = "0.5.3"
+version = "0.5.4"
 edition = "2021"
 authors = ["KaneGreen <737445366KG@Gmail.com>"]
 license = "BSL-1.0"
