@@ -31,19 +31,23 @@ jobs:
 
       - name: Build AVX2
         timeout-minutes: 600
+        env: 
+          RUSTFLAGS: -Ctarget-feature=+avx2
         run: |
           rustup default stable-x86_64-pc-windows-msvc
-          cargo rustc --release -- -C target-feature=+avx2
+          cargo build --release --verbose
           Set-Location target
           mkdir upload
           Copy-Item release/msfs2020checksum.exe upload/msfs2020checksum.avx2.exe
 
-      - name: Build default
-        timeout-minutes: 400
+      - name: Build non-AVX2
+        timeout-minutes: 600
+        env: 
+          RUSTFLAGS: -Ctarget-feature=-avx2
         run: |
           Remove-Item -Recurse -Force target/release
           Remove-Item -Force target/.rustc_info.json
-          cargo build --release
+          cargo build --release --verbose
           Set-Location target
           Copy-Item release/msfs2020checksum.exe upload/msfs2020checksum.exe
 
